@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Include modules
 include(cmake/Dependencies.cmake)
 
-option(BUILD_DOC "Build documentation using Doxygen" ON)
+option(BUILD_DOC "Build documentation using Doxygen" OFF)
 
 if(BUILD_DOC)
     include(cmake/generateDoc.cmake)  # Include the script for documentation
