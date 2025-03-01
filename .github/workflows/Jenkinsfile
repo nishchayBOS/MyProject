@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     environment {
         BUILD_DIR = "build"
     }
@@ -15,11 +15,9 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh 'sudo apt update && sudo apt install -y doxygen graphviz'
-                    } else {
-                        bat 'choco install doxygen.install graphviz -y'
-                    }
+                    bat '''
+                    choco install doxygen.install graphviz -y
+                    '''
                 }
             }
         }
@@ -27,11 +25,9 @@ pipeline {
         stage('Configure CMake') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh "cmake -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=Release -S ."
-                    } else {
-                        bat "cmake -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=Release -S ."
-                    }
+                    bat '''
+                    cmake -B %BUILD_DIR% -DCMAKE_BUILD_TYPE=Release -S .
+                    '''
                 }
             }
         }
@@ -39,11 +35,9 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh "cmake --build ${BUILD_DIR} --config Release"
-                    } else {
-                        bat "cmake --build ${BUILD_DIR} --config Release"
-                    }
+                    bat '''
+                    cmake --build %BUILD_DIR% --config Release
+                    '''
                 }
             }
         }
@@ -51,13 +45,10 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    dir("${BUILD_DIR}") {
-                        if (isUnix()) {
-                            sh "ctest --build-config Release"
-                        } else {
-                            bat "ctest --build-config Release"
-                        }
-                    }
+                    bat '''
+                    cd %BUILD_DIR%
+                    ctest --build-config Release
+                    '''
                 }
             }
         }
@@ -65,7 +56,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: "${BUILD_DIR}/**", allowEmptyArchive: true
+            archiveArtifacts artifacts: "build/**", allowEmptyArchive: true
         }
         failure {
             echo "Build failed!"
