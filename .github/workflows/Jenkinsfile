@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+    
+    environment {
+        BUILD_DIR = "build"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'github_credentials', url: 'https://github.com/your-repo.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'sudo apt update && sudo apt install -y doxygen graphviz'
+                    } else {
+                        bat 'choco install doxygen.install graphviz -y'
+                    }
+                }
+            }
+        }
+
+        stage('Configure CMake') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "cmake -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=Release -S ."
+                    } else {
+                        bat "cmake -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=Release -S ."
+                    }
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "cmake --build ${BUILD_DIR} --config Release"
+                    } else {
+                        bat "cmake --build ${BUILD_DIR} --config Release"
+                    }
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    dir("${BUILD_DIR}") {
+                        if (isUnix()) {
+                            sh "ctest --build-config Release"
+                        } else {
+                            bat "ctest --build-config Release"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: "${BUILD_DIR}/**", allowEmptyArchive: true
+        }
+        failure {
+            echo "Build failed!"
+        }
+        success {
+            echo "Build successful!"
+        }
+    }
+}

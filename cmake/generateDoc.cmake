@@ -23,9 +23,15 @@ macro(generate_documentation DOX_CONFIG_FILE)
         VERBATIM
     )
 
+    # Define the documentation installation path
+    if(NOT DEFINED CMAKE_INSTALL_DOCDIR)
+        set(CMAKE_INSTALL_DOCDIR "${CMAKE_INSTALL_PREFIX}/share/doc/${PROJECT_NAME}")
+    endif()
+
     # Install documentation (optional)
-    install(DIRECTORY "${PROJECT_BINARY_DIR}/doc/html/" DESTINATION ${CMAKE_INSTALL_DOCDIR})
+    install(DIRECTORY "${PROJECT_BINARY_DIR}/doc/html/" DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 
     # Ensure documentation files are cleaned up
     set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES doc)
 endmacro()
+
